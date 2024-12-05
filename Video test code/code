@@ -1,1 +1,54 @@
+import cv2
+import numpy as np
+from ultralytics import YOLO
+from IPython.display import Video, display
+
+# Load the custom-trained YOLOv8 model
+model = YOLO('train/weights/last.pt')  # Path to trained weights
+
+# Start video capture
+cap = cv2.VideoCapture('Test 3.mp4')  #  video filename
+
+# Define codec and output video file
+fourcc = cv2.VideoWriter_fourcc(*'XVID')
+output_filename = 'yolov8_customdataset_test3.avi'
+out = cv2.VideoWriter(output_filename, fourcc, 20.0, (int(cap.get(3)), int(cap.get(4))))
+
+# Vehicle classes of interest based on your dataset
+vehicle_classes = {'car', 'truck', 'bus', 'motorcycle', 'van'}
+
+# Process each frame
+while cap.isOpened():
+    ret, frame = cap.read()
+    if not ret:
+        break
+
+    # Run the custom YOLOv8 model on the frame
+    results = model(frame)
+
+    # Loop through detections
+    for result in results:
+        boxes = result.boxes
+        for box in boxes:
+            x1, y1, x2, y2 = map(int, box.xyxy[0])  # Bounding box coordinates
+            conf = box.conf[0]  # Confidence score
+            cls = int(box.cls[0])  # Class ID
+            label = model.names[cls]  # Get the class name
+
+            # Filter for vehicle classes
+            if label in vehicle_classes:
+                # Draw bounding box and label
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                cv2.putText(frame, f'{label} {conf:.2f}', (x1, y1 - 10),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+
+    # Write processed frame to output file
+    out.write(frame)
+
+# Release resources
+cap.release()
+out.release()
+
+# Display the resulting video
+display(Video(output_filename, embed=True))
 
