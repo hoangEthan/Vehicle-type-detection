@@ -7,7 +7,7 @@ from IPython.display import Video, display
 model = YOLO('train/weights/last.pt')  # Path to trained weights
 
 # Start video capture
-cap = cv2.VideoCapture('Test 3.mp4')  #  video filename
+cap = cv2.VideoCapture('Test 2.mp4')  #  video filename
 
 # Define codec and output video file
 fourcc = cv2.VideoWriter_fourcc(*'XVID')
