@@ -1,54 +1,52 @@
-import cv2
-import numpy as np
+pip install ultralytics opencv-python opencv-python-headless
+
+import os
 from ultralytics import YOLO
-from IPython.display import Video, display
+import cv2
 
-# Load the custom-trained YOLOv8 model
-model = YOLO('train/weights/last.pt')  # Path to trained weights
+# Directory and file setup
+VIDEOS_DIR = os.path.join('.')    # test video path
+video_path = os.path.join(VIDEOS_DIR, 'Test 7.mp4')
+video_path_out = f"{video_path}_out.mp4"
 
-# Start video capture
-cap = cv2.VideoCapture('Test 2.mp4')  #  video filename
+if not os.path.exists(video_path):
+    raise FileNotFoundError(f"Video not found at {video_path}")
 
-# Define codec and output video file
-fourcc = cv2.VideoWriter_fourcc(*'XVID')
-output_filename = 'yolov8_customdataset_test3.avi'
-out = cv2.VideoWriter(output_filename, fourcc, 20.0, (int(cap.get(3)), int(cap.get(4))))
+model_path = os.path.join('.', 'train_v2', 'weights1', 'last.pt')     # path to trained weight
+if not os.path.exists(model_path):
+    raise FileNotFoundError(f"Model weights not found at {model_path}")
 
-# Vehicle classes of interest based on your dataset
-vehicle_classes = {'car', 'truck', 'bus', 'motorcycle', 'van'}
+# Video capture
+cap = cv2.VideoCapture(video_path)
+ret, frame = cap.read()
+if not ret:
+    raise RuntimeError("Failed to read video file")
 
-# Process each frame
-while cap.isOpened():
-    ret, frame = cap.read()
-    if not ret:
-        break
+H, W, _ = frame.shape
+out = cv2.VideoWriter(video_path_out, cv2.VideoWriter_fourcc(*'XVID'), int(cap.get(cv2.CAP_PROP_FPS)), (W, H))
 
-    # Run the custom YOLOv8 model on the frame
+# Load model
+model = YOLO(model_path)  # load a custom model
+threshold = 0.5
+
+while ret:
+    # Run inference
     results = model(frame)
 
-    # Loop through detections
+    # Iterate over the detections (results is a list)
     for result in results:
-        boxes = result.boxes
-        for box in boxes:
-            x1, y1, x2, y2 = map(int, box.xyxy[0])  # Bounding box coordinates
-            conf = box.conf[0]  # Confidence score
-            cls = int(box.cls[0])  # Class ID
-            label = model.names[cls]  # Get the class name
+        # Get the bounding boxes and other data
+        for box in result.boxes:
+            x1, y1, x2, y2 = box.xyxy[0]  # Coordinates
+            score = box.conf[0]          # Confidence score
+            class_id = int(box.cls[0])   # Class ID
 
-            # Filter for vehicle classes
-            if label in vehicle_classes:
-                # Draw bounding box and label
-                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                cv2.putText(frame, f'{label} {conf:.2f}', (x1, y1 - 10),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+            if score > threshold:
+                # Draw the bounding box and label
+                cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 4)
+                cv2.putText(frame, result.names[class_id].upper(), (int(x1), int(y1 - 10)),
+                            cv2.FONT_HERSHEY_SIMPLEX, 1.3, (0, 255, 0), 3, cv2.LINE_AA)
 
-    # Write processed frame to output file
+    # Write the processed frame
     out.write(frame)
-
-# Release resources
-cap.release()
-out.release()
-
-# Display the resulting video
-display(Video(output_filename, embed=True))
-
+    ret, frame = cap.read()
