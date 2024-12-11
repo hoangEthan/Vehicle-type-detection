@@ -1,0 +1,19 @@
+from google.colab import drive
+drive.mount('/content/gdrive')
+
+ROOT_DIR = '/content/gdrive/My Drive/Cars Detection'
+
+!pip install ultralytics
+
+# traing code
+import os
+from ultralytics import YOLO
+# Load a model
+model = YOLO("yolov8n.pt")  # load a pretrained model (recommended for training)
+# Use the model
+results = model.train(data=os.path.join(ROOT_DIR, "data.yaml"), epochs=1)  # train the model
+
+# save result file in the same direcstory
+import locale
+locale.getpreferredencoding = lambda: "UTF-8"
+!scp -r /content/runs '/content/gdrive/My Drive'
