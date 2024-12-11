@@ -1,2 +1,15 @@
 
-1. Ensure that you have the required libraries installed: ultralytics, opencv-python, and opencv-python-headless.
+1. Make sure to link your google drive 
+" from google.colab import drive
+  drive.mount('/content/gdrive')a
+- Ensure all train and val's images and lable files exists in the directory
+
+2. Ensure to locate the correct directory folder
+"ROOT_DIR = '/content/gdrive/My Drive/Cars Detection"
+
+
+3. Ensure that you have the required libraries installed: ultralytics
+- uisng "!pip install ultralytics"
+
+4. Ensure data.yaml, yolov8n.yaml or yolov8.pt are exist in the same directory 
+
