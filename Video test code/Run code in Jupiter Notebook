@@ -1,1 +1,11 @@
+In Jupyter Notebook
+
+1. Ensure that you have the required libraries installed: ultralytics, opencv-python, and opencv-python-headless.
+You can install them using: " pip install ultralytics opencv-python opencv-python-headless"
+
+2 File Paths:
+-Ensure the Test 7.mp4 video exists in the videos directory.
+-Verify that the YOLO model weights file exists at "weights/last.pt."
+
+
 
